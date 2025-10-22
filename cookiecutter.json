@@ -1,0 +1,27 @@
+{
+    "project_name": "Your Project Name",
+    "_jinja2_env_vars": {
+        "variable_start_string": "<<",
+        "variable_end_string": ">>",
+        "block_start_string": "<<%",
+        "block_end_string": "%>>",
+        "comment_start_string": "<<#",
+        "comment_end_string": "#>>"
+    },
+    "_copy_without_render": [
+        "*.js",
+        "*.css",
+        "*.min.js",
+        "*.min.css",
+        "*.jpg",
+        "*.jpeg",
+        "*.png",
+        "*.gif",
+        "*.svg",
+        "*.ico",
+        "*.woff",
+        "*.woff2",
+        "*.ttf",
+        "*.eot"
+    ]
+}

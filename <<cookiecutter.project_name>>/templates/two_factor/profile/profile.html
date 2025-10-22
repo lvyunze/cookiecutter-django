@@ -1,0 +1,91 @@
+{% extends "two_factor/_base.html" %}
+{% load i18n %}
+{% load two_factor_tags %}
+
+{% block title %}Account Security | << cookiecutter.project_name >>{% endblock %}
+{% block title_h2 %}{% trans "Account Security" %}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    {% if default_device %}
+        <section class="p-6 bg-gray-50 border border-gray-200 rounded-lg space-y-2">
+            <h3 class="text-lg font-semibold text-gray-900">{% trans "Primary Method" %}</h3>
+            <p class="text-sm text-gray-600">
+                {% blocktrans with primary=default_device|as_action %}Primary method: {{ primary }}{% endblocktrans %}
+            </p>
+        </section>
+
+        {% if available_phone_methods %}
+            <section class="p-6 bg-white border border-gray-200 rounded-lg space-y-4">
+                <div class="space-y-1">
+                    <h3 class="text-lg font-semibold text-gray-900">{% trans "Backup Phone Numbers" %}</h3>
+                    <p class="text-sm text-gray-600">
+                        {% blocktrans trimmed %}If your primary method is not available, we are able to send backup tokens to the phone numbers listed below.{% endblocktrans %}
+                    </p>
+                </div>
+                {% if backup_phones %}
+                    <ul class="space-y-3">
+                        {% for phone in backup_phones %}
+                            <li class="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-md">
+                                <span class="text-sm text-gray-700">{{ phone|as_action }}</span>
+                                {% trans "Are you sure?" as phone_delete_confirm_message %}
+                                <form method="post" action="{% url 'two_factor:phone_delete' phone.id %}" onsubmit="return confirm('{{ phone_delete_confirm_message|escapejs }}');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="px-3 py-1 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                        {% trans "Unregister" %}
+                                    </button>
+                                </form>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                <div>
+                    <a href="{% url 'two_factor:phone_create' %}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        {% trans "Add Phone Number" %}
+                    </a>
+                </div>
+            </section>
+        {% endif %}
+
+        <section class="p-6 bg-white border border-gray-200 rounded-lg space-y-4">
+            <div class="space-y-1">
+                <h3 class="text-lg font-semibold text-gray-900">{% trans "Backup Tokens" %}</h3>
+                <p class="text-sm text-gray-600">
+                    {% blocktrans trimmed %}If you don't have any device with you, you can access your account using backup tokens.{% endblocktrans %}
+                    {% blocktrans trimmed count counter=backup_tokens %}You have only one backup token remaining.{% plural %}You have {{ counter }} backup tokens remaining.{% endblocktrans %}
+                </p>
+            </div>
+            <div>
+                <a href="{% url 'two_factor:backup_tokens' %}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    {% trans "Show Codes" %}
+                </a>
+            </div>
+        </section>
+
+        <section class="p-6 bg-white border border-gray-200 rounded-lg space-y-4">
+            <div class="space-y-1">
+                <h3 class="text-lg font-semibold text-gray-900">{% trans "Disable Two-Factor Authentication" %}</h3>
+                <p class="text-sm text-gray-600">
+                    {% blocktrans trimmed %}However we strongly discourage you to do so, you can also disable two-factor authentication for your account.{% endblocktrans %}
+                </p>
+            </div>
+            <div>
+                <a href="{% url 'two_factor:disable' %}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
+                    {% trans "Disable Two-Factor Authentication" %}
+                </a>
+            </div>
+        </section>
+    {% else %}
+        <section class="p-6 bg-white border border-gray-200 rounded-lg space-y-4">
+            <p class="text-sm text-gray-600">
+                {% blocktrans trimmed %}Two-factor authentication is not enabled for your account. Enable two-factor authentication for enhanced account security.{% endblocktrans %}
+            </p>
+            <div>
+                <a href="{% url 'two_factor:setup' %}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    {% trans "Enable Two-Factor Authentication" %}
+                </a>
+            </div>
+        </section>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends "two_factor/_base.html" %}
+{% load i18n %}
+
+{% block title %}Setup Two-Factor Authentication | <<cookiecutter.project_name|upper >>{% endblock %}
+
+{% block title_h2 %}
+    {% if wizard.steps.current == 'welcome' %}
+        Enable Two-Factor Authentication
+    {% elif wizard.steps.current == 'method' %}
+        Choose Your Authentication Method
+    {% elif wizard.steps.current == 'generator' %}
+        Scan the QR Code
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<form method="post" class="space-y-6">
+    {% csrf_token %}
+    {{ wizard.management_form }}
+
+    {% if wizard.steps.current == 'welcome' %}
+        <div class="prose prose-sm max-w-none text-gray-600">
+            <p>Two-factor authentication provides an extra layer of security for your account. Once enabled, you'll need to provide a unique code from your authenticator app in addition to your password when you log in.</p>
+            <p>The setup process involves these steps:</p>
+            <ol>
+                <li>Choose an authentication method (we recommend using a token generator app).</li>
+                <li>Scan a QR code or enter a key into your app.</li>
+                <li>Verify the setup by entering a code from the app.</li>
+            </ol>
+        </div>
+
+    {% elif wizard.steps.current == 'method' %}
+        <div class="space-y-4">
+            <p class="text-sm text-gray-600">Please select your preferred method for generating verification codes.</p>
+            {% for error in wizard.form.non_field_errors %}
+                <p class="text-sm text-red-600">{{ error }}</p>
+            {% endfor %}
+            <div class="space-y-2">
+                {{ wizard.form.method }}
+            </div>
+        </div>
+
+    {% elif wizard.steps.current == 'generator' %}
+        <p class="text-sm text-gray-600">To start using a token generator, please use your smartphone to scan the QR code below. For example, use Google Authenticator.</p>
+
+        <div class="flex flex-col items-center gap-4 p-4 bg-white border rounded-lg">
+            {% if secret_key %}
+                <div id="qrcode"></div>
+                {% load static %}
+                <script src="{% static 'js/qrcode.min.js' %}"></script>
+                <script>
+                  document.addEventListener('DOMContentLoaded', function() {
+                    var issuer = "{{ wizard.form.issuer|default:'<<cookiecutter.project_name|upper >>'|escapejs }}";
+                    var username = "{{ request.user.username|escapejs }}";
+                    var secret = "{{ secret_key }}";
+                    var otpauthUrl = `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(username)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}`;
+                    
+                    var qr = qrcode(0, 'L');
+                    qr.addData(otpauthUrl);
+                    qr.make();
+                    document.getElementById('qrcode').innerHTML = qr.createImgTag(6, 12);
+                  });
+                </script>
+                <div class="text-sm text-gray-500 text-center">Scan this QR code with your authenticator app to add your <<cookiecutter.project_name|upper>> account.</div>
+            {% else %}
+                <div class="p-4 text-sm text-yellow-800 bg-yellow-100 rounded-lg" role="alert">
+                    QR code is currently unavailable. Please try again later.
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="text-center text-sm text-gray-500">Alternatively, you can manually enter the following secret key into your authenticator app:</div>
+        <div class="p-3 font-mono text-sm text-center text-gray-800 bg-gray-100 border rounded-md break-all">
+            {{ secret_key }}
+        </div>
+
+        <div>
+            <label for="{{ wizard.form.token.id_for_label }}" class="block text-sm font-medium text-gray-700">Verification Code</label>
+            <div class="mt-1">
+                <input
+                    type="text"
+                    name="{{ wizard.form.token.html_name }}"
+                    id="{{ wizard.form.token.id_for_label }}"
+                    value="{{ wizard.form.token.value|default_if_none:'' }}"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    placeholder="Enter 6-digit code from your app"
+                    autocomplete="one-time-code"
+                    inputmode="numeric"
+                    pattern="\d{6}"
+                    required
+                >
+            </div>
+            {% if wizard.form.token.errors %}
+                <div class="mt-1 text-sm text-red-600">
+                    {% for error in wizard.form.token.errors %}<p>{{ error }}</p>{% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div class="pt-4">
+        <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            {% if wizard.steps.current == 'welcome' or wizard.steps.current == 'method' %}
+                Next
+            {% elif wizard.steps.current == 'generator' %}
+                Verify and Complete Setup
+            {% endif %}
+        </button>
+    </div>
+</form>
+{% endblock %}
