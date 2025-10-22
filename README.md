@@ -34,7 +34,7 @@ This is a Cookiecutter template for quickly bootstrapping Django projects with b
 │   ├── models.py
 │   ├── views.py
 │   └── ...
-├── {{cookiecutter.project_name|upper}}/  # Main project settings
+├── {{cookiecutter.project_name}}/  # Main project settings
 │   ├── __init__.py
 │   ├── asgi.py
 │   ├── settings.py

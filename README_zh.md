@@ -34,7 +34,7 @@
 │   ├── models.py
 │   ├── views.py
 │   └── ...
-├── {{cookiecutter.project_name|upper}}/  # 主项目配置
+├── {{cookiecutter.project_name}}/  # 主项目配置
 │   ├── __init__.py
 │   ├── asgi.py
 │   ├── settings.py
