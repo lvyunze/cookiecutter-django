@@ -62,7 +62,7 @@ pip install cookiecutter
 ### 2. Generate Project
 
 ```bash
-cookiecutter https://github.com/yourusername/cookiecutter-django
+cookiecutter https://github.com/lvyunze/cookiecutter-django
 ```
 
 Or if you have cloned this repository locally:
